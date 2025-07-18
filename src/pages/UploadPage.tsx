@@ -12,19 +12,30 @@ export default function UploadPage() {
     setUploading(true);
     const xhr = new XMLHttpRequest();
     xhr.open("POST", import.meta.env.VITE_API_URL + "/upload");
-    xhr.upload.onprogress = (e) => {
+
+    xhr.upload.onprogress = e => {
       if (e.lengthComputable) {
         setProgress(Math.round((e.loaded / e.total) * 100));
       }
     };
-    xhr.onload = () => {
-      const data = JSON.parse(xhr.responseText);
-      navigate(`/annotate/${data.job_id}`);
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        setUploading(false);
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          navigate(`/annotate/${data.job_id}`);
+        } else {
+          alert("Upload failed");
+        }
+      }
     };
+
     xhr.onerror = () => {
       setUploading(false);
       alert("Upload failed");
     };
+
     const formData = new FormData();
     formData.append("audio_file", file);
     xhr.send(formData);
@@ -36,7 +47,7 @@ export default function UploadPage() {
       <input
         type="file"
         accept="audio/wav"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
+        onChange={e => setFile(e.target.files?.[0] || null)}
         style={{ display: 'block', margin: '20px 0' }}
       />
       {uploading && (

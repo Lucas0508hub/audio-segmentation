@@ -11,8 +11,6 @@
     "react": "latest",
     "react-dom": "latest",
     "wavesurfer.js": "latest",
-    "js-cookie": "latest",
-    "tailwindcss": "latest",
-    "@tailwindcss/forms": "latest"
+    "js-cookie": "latest"
   }
 }

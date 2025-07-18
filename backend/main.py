@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, Column, String, Float
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-import uuid, os
+import uuid, os, time
 from pydub import AudioSegment, silence
 
 # ──────────────────────────── config & db setup ──────────────────────────────
@@ -129,17 +129,12 @@ def update_segment(
     return {"status": "ok"}
 
 # ───────────────────────── segmenting job ───────────────────────────────────
-import time
 def segment_job(job_id: str, path: str, db: Session):
     start_ts = time.time()
     audio = AudioSegment.from_file(path, format="wav")
-    # … split + inserts …
-    duration = time.time() - start_ts
-    print(f"[segment_job] job_id={job_id} took {duration:.2f}s to segment")
     chunks = silence.split_on_silence(audio, min_silence_len=500, silence_thresh=-40)
+    print(f"[segment_job] Found {len(chunks)} chunks for job {job_id}")
     for chunk in chunks:
-        start_sec = (len(db.query(Segment).filter(Segment.job_id == job_id).all()) * 0)
-        # approximate start by cumulative length
         start = 0.0
         end   = len(chunk) / 1000.0
         seg = Segment(id=str(uuid.uuid4()), job_id=job_id, start=start, end=end)
@@ -147,6 +142,8 @@ def segment_job(job_id: str, path: str, db: Session):
         out_path = f"/tmp/{job_id}_{seg.id}.wav"
         chunk.export(out_path, format="wav")
     db.commit()
+    duration = time.time() - start_ts
+    print(f"[segment_job] job_id={job_id} took {duration:.2f}s to segment")
 
 # ───────────────────────────── upload endpoint ──────────────────────────────
 @app.post("/upload")
@@ -161,3 +158,14 @@ async def upload_audio(
         f.write(await audio_file.read())
     background.add_task(segment_job, job_id, path, db)
     return {"job_id": job_id}
+
+# ───────────────────────────── get job endpoint ─────────────────────────────
+@app.get("/jobs/{job_id}")
+def get_job(job_id: str, db: Session = Depends(get_db)):
+    segs = db.query(Segment).filter(Segment.job_id == job_id).all()
+    return {
+        "segments": [
+            {"id": s.id, "start": s.start, "end": s.end}
+            for s in segs
+        ]
+    }

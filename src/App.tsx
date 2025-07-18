@@ -1,3 +1,14 @@
+// File: src/main.tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
 // File: src/App.tsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -39,8 +50,7 @@ export default function UploadPage() {
     xhr.open("POST", import.meta.env.VITE_API_URL + "/upload");
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
-        const pct = Math.round((e.loaded / e.total) * 100);
-        setProgress(pct);
+        setProgress(Math.round((e.loaded / e.total) * 100));
       }
     };
     xhr.onload = () => {
@@ -48,8 +58,8 @@ export default function UploadPage() {
       navigate(`/annotate/${data.job_id}`);
     };
     xhr.onerror = () => {
-      alert('Upload failed.');
       setUploading(false);
+      alert("Upload failed");
     };
     const formData = new FormData();
     formData.append("audio_file", file);
@@ -74,14 +84,7 @@ export default function UploadPage() {
       <button
         disabled={!file || uploading}
         onClick={handleUpload}
-        style={{
-          backgroundColor: '#007bff',
-          color: '#fff',
-          border: 'none',
-          padding: '10px 20px',
-          borderRadius: 4,
-          cursor: file && !uploading ? 'pointer' : 'not-allowed'
-        }}
+        style={{ backgroundColor: '#007bff', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: file && !uploading ? 'pointer' : 'not-allowed' }}
       >
         {uploading ? "Uploading..." : "Upload"}
       </button>
@@ -110,16 +113,14 @@ export default function AnnotatePage() {
   useEffect(() => {
     if (!segments.length) return;
     wave?.destroy();
-    const newWave = WaveSurfer.create({
+    const ws = WaveSurfer.create({
       container: "#waveform",
       waveColor: "#ccc",
       progressColor: "#28a745",
       height: 80,
     });
-    newWave.load(
-      `${import.meta.env.VITE_API_URL}/audio/${jobId}/${segments[currentIndex].id}.wav`
-    );
-    setWave(newWave);
+    ws.load(`${import.meta.env.VITE_API_URL}/audio/${jobId}/${segments[currentIndex].id}.wav`);
+    setWave(ws);
   }, [segments, currentIndex]);
 
   const handleSubmit = async () => {
@@ -140,34 +141,25 @@ export default function AnnotatePage() {
       <h2 style={{ color: '#28a745' }}>Annotate Sentences</h2>
       {seg ? (
         <>
-          <p style={{ fontSize: '1.1rem' }}>
-            Segment {currentIndex + 1} of {segments.length} ({seg.start} → {seg.end} seconds)
-          </p>
+          <p style={{ fontSize: '1.1rem' }}>Segment {currentIndex + 1} of {segments.length} ({seg.start} → {seg.end} seconds)</p>
           <div id="waveform" />
-          <br />
           <textarea
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
             rows={3}
-            cols={60}
             placeholder="Type what you hear..."
-            style={{ width: '100%', padding: 10, fontSize: '1rem', borderRadius: 4, border: '1px solid #ccc' }}
+            style={{ width: '100%', padding: 10, fontSize: '1rem', borderRadius: 4, border: '1px solid #ccc', margin: '20px 0' }}
           />
-          <br />
           <button
             onClick={handleSubmit}
             style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}
-          >
-            Submit
-          </button>
+          >Submit</button>
         </>
       ) : (
         <>
-          <p style={{ fontSize: '1.2rem' }}>Done! You can now export your data.</p>
+          <p style={{ fontSize: '1.2rem', marginBottom: 20 }}>Done! You can now export your data.</p>
           <Link to={`/export/${jobId}`}>
-            <button style={{ backgroundColor: '#ffc107', color: '#212529', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}>
-              Go to Export
-            </button>
+            <button style={{ backgroundColor: '#ffc107', color: '#212529', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}>Go to Export</button>
           </Link>
         </>
       )}
@@ -202,9 +194,7 @@ export default function ExportPage() {
       <button
         onClick={handleExport}
         style={{ backgroundColor: '#17a2b8', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}
-      >
-        Download ZIP
-      </button>
+      >Download ZIP</button>
     </div>
   );
 }

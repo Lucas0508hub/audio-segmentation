@@ -2,9 +2,8 @@ from fastapi import FastAPI, HTTPException, Depends, File, UploadFile
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Optional
-from sqlalchemy import create_engine, Column, String, Float, ForeignKey
-from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session
+from sqlalchemy import create_engine, Column, String, Float
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 import uuid, os
@@ -39,12 +38,12 @@ class Segment(Base):
 Base.metadata.create_all(bind=engine)
 
 # ───────────────────────── auth helpers ──────────────────────────────────────
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context   = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def verify_password(plain, hashed): return pwd_context.verify(plain, hashed)
-def hash_password(password): return pwd_context.hash(password)
-def create_token(data: dict): return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+def hash_password(password):        return pwd_context.hash(password)
+def create_token(data: dict):       return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_db():
     db = SessionLocal()
@@ -55,7 +54,7 @@ def get_db():
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload  = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         if not username:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -73,8 +72,8 @@ class UserCreate(BaseModel):
 
 class SegmentUpdate(BaseModel):
     transcript: str | None = None
-    start: float | None = Field(None, ge=0)
-    end:   float | None = Field(None, gt=0)
+    start:      float | None = Field(None, ge=0)
+    end:        float | None = Field(None, gt=0)
 
 # ───────────────────────────── fastapi init ──────────────────────────────────
 app = FastAPI()
@@ -90,7 +89,7 @@ app.add_middleware(
 def register(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == user.username).first():
         raise HTTPException(status_code=400, detail="Username taken")
-    hashed = hash_password(user.password)
+    hashed  = hash_password(user.password)
     db_user = User(username=user.username, password=hashed)
     db.add(db_user)
     db.commit()
@@ -131,13 +130,13 @@ def update_segment(
 async def upload_audio(
     audio_file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user)
+    _: User = Depends(get_current_user),
 ):
     job_id = str(uuid.uuid4())
-    path = f"/tmp/{job_id}.wav"
+    path   = f"/tmp/{job_id}.wav"
     with open(path, "wb") as f:
         f.write(await audio_file.read())
 
-    # TODO: enqueue background segmentation job here
+    # TODO: kick off background segmentation here
 
     return {"job_id": job_id}

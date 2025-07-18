@@ -18,16 +18,14 @@ export default function AnnotatePage() {
   useEffect(() => {
     if (!segments.length) return;
     wave?.destroy();
-    const newWave = WaveSurfer.create({
+    const ws = WaveSurfer.create({
       container: "#waveform",
       waveColor: "#ccc",
-      progressColor: "#007bff",
+      progressColor: "#28a745",
       height: 80,
     });
-    newWave.load(
-      `${import.meta.env.VITE_API_URL}/audio/${jobId}/${segments[currentIndex].id}.wav`
-    );
-    setWave(newWave);
+    ws.load(`${import.meta.env.VITE_API_URL}/audio/${jobId}/${segments[currentIndex].id}.wav`);
+    setWave(ws);
   }, [segments, currentIndex]);
 
   const handleSubmit = async () => {
@@ -44,32 +42,35 @@ export default function AnnotatePage() {
   const seg = segments[currentIndex];
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Annotate Sentences</h2>
+    <div style={{ padding: 20, maxWidth: 800, margin: '40px auto', backgroundColor: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <h2 style={{ color: '#28a745' }}>Annotate Sentences</h2>
       {seg ? (
         <>
-          <p>
-            Segment {currentIndex + 1} of {segments.length} (
-            {seg.start} → {seg.end} seconds)
+          <p style={{ fontSize: '1.1rem' }}>
+            Segment {currentIndex + 1} of {segments.length} ({seg.start} → {seg.end} seconds)
           </p>
           <div id="waveform" />
-          <br />
           <textarea
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
             rows={3}
-            cols={60}
             placeholder="Type what you hear..."
+            style={{ width: '100%', padding: 10, fontSize: '1rem', borderRadius: 4, border: '1px solid #ccc', margin: '20px 0' }}
           />
-          <br />
-          <br />
-          <button onClick={handleSubmit}>Submit</button>
+          <button
+            onClick={handleSubmit}
+            style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}
+          >
+            Submit
+          </button>
         </>
       ) : (
         <>
-          <p>Done! You can now export your data.</p>
+          <p style={{ fontSize: '1.2rem', marginBottom: 20 }}>Done! You can now export your data.</p>
           <Link to={`/export/${jobId}`}>
-            <button>Go to Export</button>
+            <button style={{ backgroundColor: '#ffc107', color: '#212529', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}>
+              Go to Export
+            </button>
           </Link>
         </>
       )}

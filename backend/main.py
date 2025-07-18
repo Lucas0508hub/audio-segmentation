@@ -130,7 +130,6 @@ def update_segment(
 async def upload_audio(
     audio_file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
 ):
     job_id = str(uuid.uuid4())
     path   = f"/tmp/{job_id}.wav"

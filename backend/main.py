@@ -44,8 +44,8 @@ def segment_job(job_id: str, path: str, db: Session):
 
 @app.post("/upload")
 async def upload_audio(
-    audio_file: UploadFile = File(...),
     background: BackgroundTasks,
+    audio_file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
     # 1) save upload

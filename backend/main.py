@@ -1,3 +1,7 @@
+import sys, audioop
+# make Python treat the stdlib `audioop` module as if it were `pyaudioop`
+sys.modules["pyaudioop"] = audioop
+
 from fastapi import FastAPI, File, UploadFile, Depends, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment, silence

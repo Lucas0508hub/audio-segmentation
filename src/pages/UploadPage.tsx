@@ -7,38 +7,27 @@ export default function UploadPage() {
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", import.meta.env.VITE_API_URL + "/upload");
-
-    xhr.upload.onprogress = e => {
-      if (e.lengthComputable) {
-        setProgress(Math.round((e.loaded / e.total) * 100));
+    try {
+      const form = new FormData();
+      form.append("audio_file", file);
+      const res = await fetch(import.meta.env.VITE_API_URL + "/upload", {
+        method: "POST",
+        body: form,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`${res.status}: ${text}`);
       }
-    };
-
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        setUploading(false);
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-          navigate(`/annotate/${data.job_id}`);
-        } else {
-          alert("Upload failed");
-        }
-      }
-    };
-
-    xhr.onerror = () => {
+      const { job_id } = await res.json();
+      navigate(`/annotate/${job_id}`);
+    } catch (err: any) {
+      console.error("Upload failed", err);
+      alert(`Upload failed: ${err.message}`);
       setUploading(false);
-      alert("Upload failed");
-    };
-
-    const formData = new FormData();
-    formData.append("audio_file", file);
-    xhr.send(formData);
+    }
   };
 
   return (

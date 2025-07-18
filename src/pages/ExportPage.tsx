@@ -19,9 +19,14 @@ export default function ExportPage() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Export Results</h2>
-      <button onClick={handleExport}>Download ZIP</button>
+    <div style={{ padding: 20, maxWidth: 600, margin: '40px auto', backgroundColor: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <h2 style={{ color: '#17a2b8' }}>Export Results</h2>
+      <button
+        onClick={handleExport}
+        style={{ backgroundColor: '#17a2b8', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 4, cursor: 'pointer' }}
+      >
+        Download ZIP
+      </button>
     </div>
   );
 }

@@ -125,3 +125,19 @@ def update_segment(
 
     db.commit()
     return {"status": "ok"}
+
+# ───────────────────────────── upload endpoint ──────────────────────────────
+@app.post("/upload")
+async def upload_audio(
+    audio_file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user)
+):
+    job_id = str(uuid.uuid4())
+    path = f"/tmp/{job_id}.wav"
+    with open(path, "wb") as f:
+        f.write(await audio_file.read())
+
+    # TODO: enqueue background segmentation job here
+
+    return {"job_id": job_id}

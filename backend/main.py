@@ -1,3 +1,10 @@
+import sys, types
+# Create a fake audioop module
+_audioop = types.ModuleType("audioop")
+# (pydub may import either audioop or pyaudioop)
+sys.modules["audioop"]   = _audioop
+sys.modules["pyaudioop"] = _audioop
+
 import sys, audioop
 # make Python treat the stdlib `audioop` module as if it were `pyaudioop`
 sys.modules["pyaudioop"] = audioop

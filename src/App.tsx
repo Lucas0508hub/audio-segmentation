@@ -1,3 +1,4 @@
+// File: src/App.tsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import UploadPage from "./pages/UploadPage";
@@ -28,19 +29,31 @@ import { useNavigate } from "react-router-dom";
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!file) return;
     setUploading(true);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", import.meta.env.VITE_API_URL + "/upload");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        setProgress(pct);
+      }
+    };
+    xhr.onload = () => {
+      const data = JSON.parse(xhr.responseText);
+      navigate(`/annotate/${data.job_id}`);
+    };
+    xhr.onerror = () => {
+      alert('Upload failed.');
+      setUploading(false);
+    };
     const formData = new FormData();
     formData.append("audio_file", file);
-    const res = await fetch(import.meta.env.VITE_API_URL + "/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    navigate(`/annotate/${data.job_id}`);
+    xhr.send(formData);
   };
 
   return (
@@ -52,6 +65,12 @@ export default function UploadPage() {
         onChange={(e) => setFile(e.target.files?.[0] || null)}
         style={{ display: 'block', margin: '20px 0' }}
       />
+      {uploading && (
+        <div style={{ marginBottom: 20 }}>
+          <progress value={progress} max={100} style={{ width: '100%' }} />
+          <span>{progress}%</span>
+        </div>
+      )}
       <button
         disabled={!file || uploading}
         onClick={handleUpload}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
-import RegionsPlugin from "wavesurfer.js/dist/plugin/wavesurfer.regions";
+import RegionsPlugin from "wavesurfer.js/dist/plugins/regions";
 
 type Segment = { id: string; start: number; end: number };
 

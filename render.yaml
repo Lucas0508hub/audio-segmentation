@@ -1,7 +1,17 @@
+# render.yaml
+
+# 1) Declare the database resource
+databases:
+  - name: audio-segmentation-db
+    plan: free       # or a paid plan of your choice
+    region: oregon   # pick your preferred region
+
+# 2) Declare the two web services
 services:
   - type: web
     name: backend
     env: python
+    plan: free       # or your paid plan
     buildCommand: pip install -r backend/requirements.txt
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 8000
     envVars:
@@ -10,13 +20,14 @@ services:
           name: audio-segmentation-db
           property: connectionString
       - key: SECRET_KEY
-        value: your_long_random_secret
+        value: your_long_random_secret_key
 
   - type: web
     name: frontend
     env: node
+    plan: free
     buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && npm install serve -g && serve -s build -l 3000
+    startCommand: cd frontend && npx serve -s build -l 3000
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://audio-backend.onrender.com
+        value: https://backend.onrender.com   # replace with your actual backend URL

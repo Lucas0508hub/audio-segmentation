@@ -129,8 +129,13 @@ def update_segment(
     return {"status": "ok"}
 
 # ───────────────────────── segmenting job ───────────────────────────────────
+import time
 def segment_job(job_id: str, path: str, db: Session):
+    start_ts = time.time()
     audio = AudioSegment.from_file(path, format="wav")
+    # … split + inserts …
+    duration = time.time() - start_ts
+    print(f"[segment_job] job_id={job_id} took {duration:.2f}s to segment")
     chunks = silence.split_on_silence(audio, min_silence_len=500, silence_thresh=-40)
     for chunk in chunks:
         start_sec = (len(db.query(Segment).filter(Segment.job_id == job_id).all()) * 0)

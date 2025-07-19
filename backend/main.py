@@ -84,12 +84,16 @@ class SegmentUpdate(BaseModel):
 
 # ───────────────────────────── fastapi init ──────────────────────────────────
 app = FastAPI()
+
+# ──────────────────────────── CORS middleware ────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],               # or you can list your exact origin(s)
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# ───────────────────────────────────────────────────────────────────────────────
 
 # ───────────────────────────── auth routes ───────────────────────────────────
 @app.post("/register")
